@@ -11,6 +11,20 @@
 \usepackage{listings}
 \usepackage[a4paper]{geometry}
 \usepackage{float}
+\usepackage{natbib}
+
+\usepackage{filecontents}
+\begin{filecontents*}{mystyle.sty}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mystyle}
+\newenvironment{acknowledgments}
+  {\renewcommand{\abstractname}{Acknowledgments}% Abstract > Acknowledgements
+   \begin{abstract}}
+  {\end{abstract}
+   \clearpage}
+\endinput
+\end{filecontents*}
+\usepackage{mystyle}
 
 \makeatletter %otherwise geometry resets everything
 \Gm@restore@org
@@ -20,6 +34,7 @@
 \setlength{\voffset}{0cm}
 \setlength{\headheight}{0cm}
 \setlength{\topmargin}{0cm}
+\setlength{\marginparwidth}{2cm}
 \setlength{\extrarowheight}{3pt} %for superscripts in tabular
 \setlength{\arraycolsep}{4pt}
 \lstset{basicstyle = \footnotesize, breaklines = true}
@@ -29,33 +44,32 @@
 \begin{document}
 \begin{titlepage}
 \begin{center}
-\textsc{\LARGE Master thesis\\Computer Science}\\[1.5cm]
-\includegraphics[height=100pt]{logo}
+\textsc{\LARGE Master thesis}\\[1.5cm]
+\includegraphics[height=100pt]{tbs_logo_2019.png}
 
 \vspace{0.4cm}
-\textsc{\Large Radboud University}\\[1cm]
+\textsc{\Large Toulouse Business School}\\[1cm]
 \hrule
 \vspace{0.4cm}
-\textbf{\huge Thesis Title\\[0.3cm]
-\LARGE Subtitle if you like
-}\\[0.4cm]
+\textbf{\huge Classifying Short Text for \\Harmonized System with \\Google BERT\\[0.3cm]
+\LARGE }
 \hrule
 \vspace{2cm}
-\begin{minipage}[t]{0.45\textwidth}
+\begin{minipage}[t]{0.52\textwidth}
 \begin{flushleft} \large
 \textit{Author:}\\
-Firstname Lastname\\
-sXXXXXX
+Kevin Darmon\\
+\texttt{k.darmon@tbs-education.org}\\[1.3cm]
 \end{flushleft}
 \end{minipage}
 \begin{minipage}[t]{0.45\textwidth}
 \begin{flushright} \large
 \textit{First supervisor/assessor:}\\
-Prof.dr.ir. Arjen P. de Vries\\
-\texttt{arjen@cs.ru.nl}\\[1.3cm]
+Prof.dr. Kevin Carillo\\
+\texttt{k.carillo@tbs-education.fr}\\[1.3cm]
 \textit{Second assessor:}\\
-Firstname Lastname\\
-\texttt{NAME@cs.ru.nl}
+Olivier Mallet\\
+\texttt{olivier.mallet@atos.net}
 \end{flushright}
 \end{minipage}
 \vfill
@@ -64,13 +78,13 @@ Firstname Lastname\\
 \end{titlepage}
 
 \input{abstract}
+\input{acknowledgments}
 \tableofcontents
-
 \input{introduction}
 \input{relatedwork}
 \input{conclusions}
 
-\bibliographystyle{alpha}
+\bibliographystyle{apalike}
 \bibliography{bibliography}
 
 \appendix

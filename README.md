@@ -1,4 +1,4 @@
-# Ru-Master-Thesis-Template-CompSci
-A Tex template for a Radboud University Computing Science Master Thesis
+# TBS-Master-Thesis-Template
+A Tex template for TBS University Master Thesis
 
-Credit: Arjen de Vries! See https://github.com/arjenpdevries/ru-bsc-thesis-template for a bachelor template. I merely replaced the word bachelor with master. 
+See https://github.com/KDTheory/TBS-Master-Thesis-Template for the template.
