@@ -11,7 +11,10 @@
 \usepackage{listings}
 \usepackage[a4paper]{geometry}
 \usepackage{float}
-\usepackage{natbib}
+\usepackage[english]{babel}
+\usepackage[nottoc]{tocbibind}
+\usepackage[square,numbers]{natbib}
+
 
 \usepackage{filecontents}
 \begin{filecontents*}{mystyle.sty}
@@ -82,9 +85,10 @@ Olivier Mallet\\
 \tableofcontents
 \input{introduction}
 \input{relatedwork}
+\input{results}
 \input{conclusions}
 
-\bibliographystyle{apalike}
+\bibliographystyle{abbrvnat}
 \bibliography{bibliography}
 
 \appendix
