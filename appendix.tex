@@ -1,12 +1,26 @@
 \chapter{Appendix}\label{ch:data}
 An appendix, if you need one.
 
-\section{Current Code}
+\section{Appendix A : Word Masking}
+
+Training the language model in BERT is done by predicting 15{\%} of the tokens in the input, that were randomly picked. These tokens are pre-processed as follows : 80{\%} are replaced with a “[MASK]” token, 10{\%} with a random word, and 10{\%} use the original word. The intuition that led the authors to pick this approach is as follows according \citeauthor{Devlin2018} :
+\begin{itemize}
+ 
+\item If we used [MASK] 100{\%} of the time the model wouldn’t necessarily produce good token representations for non-masked words. The non-masked tokens were still used for context, but the model was optimized for predicting masked words.
+\item If we used [MASK] 90{\%} of the time and random words 10{\%} of the time, this would teach the model that the observed word is never correct.
+\item If we used [MASK] 90{\%} of the time and kept the same word 10{\%} of the time, then the model could just trivially copy the non-contextual embedding.
+\end{itemize}
+
+The advantage of this procedure is that the
+Transformer encoder does not know which words it will be asked to predict or which have been re- placed by random words, so it is forced to keep a distributional contextual representation of every input token. Additionally, because random replacement only occurs for 1.5{\%} of all tokens (i.e., 10{\%} of 15{\%}), this does not seem to harm the model’s language understanding capability.
+
+
+\section{Appendix B : Current Code}
 The online appendix to this work, which includes example code of the network
 proposed here, can be found at 
 
 images
 
-\section{Descriptions of data sets}
+\section{Appendix C : Descriptions of data sets}
 
 pic data set
