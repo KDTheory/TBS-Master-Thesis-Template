@@ -23,7 +23,14 @@ A key idea is that these embeddings can be learned on data outside the target da
 
 \section{Short Text Classification}
 
-A specific sub-field of text categorization deals with short text. Short text is especially prevalent online, where it can take the form of twitter messages, reviews, titles, chat messages, URLs, and search queries. Due to the limited information contained in a message the problem is characterized by data sparsity and a lack of context \cite{Wang2017}. This is especially true with regards to Twitter messages (also known as Tweets) and chat messages, which are often limited in the amount of characters or words in a sentence. Recurring problems are also that these texts do not usually follow natural language conventions: in order to stay brief, these texts often contain a telegram-style syntax and common natural language processing techniques do not apply in the same way they do with spoken text, or longer text as is common in books. This results in a problem of ambiguity, where a piece of text might have multiple meanings but does not provide enough context to figure out which meaning was intended. Often, these texts also include specific tokens and characters unique to the domain. Interestingly, it has been shown that Naive Bayes models outperform SVMs if the text length is limited, while for longer text the opposite still holds true \cite{Wang2012}.
+A specific sub-field of text categorization deals with short text. Short text is especially prevalent online, where it can take the form of twitter messages, reviews, titles, chat messages, URLs, and search queries. Due to the limited information contained in a message the problem is characterized by data sparsity and a lack of context \cite{Wang2017}. This is especially true with regards to Twitter messages (also known as Tweets) and chat messages, which are often limited in the amount of characters or words in a sentence. Recurring problems are also that these texts do not usually follow natural language conventions: in order to stay brief, these texts often contain a telegram-style syntax and common natural language processing techniques do not apply in the same way they do with spoken text, or longer text as is common in books. This results in a problem of ambiguity, where a piece of text might have multiple meanings but does not provide enough context to figure out which meaning was intended. Often, these texts also include specific tokens and characters unique to the domain. 
+
+\section{Advantages Over Long Text Classification}
+On the contrary, short text classification does have some advantages over long text classification. For example, when creating a data set for short text classifiers it is a much more efficient and faster process. A human can annotate, read and tag each exemple in a short period of time rather than long text, also the decision making is simpler. In fact, reading a full document of many pages and then the decision process of tagging and/or categorize is a more complex and time-consuming task.\\
+
+When facing a full documents, often a person could face analysis paralysis \cite{Bonn2007} which could leads to errors and/or divergence in the training data.
+Also, short text classifiers are easier to test and evaluate. For exemple when trying a model, it’s easier to check the prediction and to change everything. When doing the same on long text, manual evaluation is a much more intimidating task.
+
 
 \section{Neural Network for Text}
 Neural networks for natural language processing have experienced a surge in popularity in recent years. The most common methods can be roughly grouped in two categories: Convolutional Neural Networks (which includes the approach in this thesis) and Recurrent Neural Networks (which include Long-Short-Term Memory (LSTM) networks and Gated Recurrent Units (GRUs)).\\
@@ -34,7 +41,7 @@ With word embeddings, neural networks for text gained a significant boost in pop
 \\
 Current approaches also include bi-directional LSTMs, which pass over text both from left-to-right \cite{Radford2018} and right-to-left. This greatly enhances the ability of RNNs to deal with longer dependencies in text. Among these, the ELMo model \cite{Peters2018} successfully applies this concept to produce embeddings that change on differing sentences (context).\\ 
 
-
+\newpage
 \section{Google BERT}
 Attention mechanisms are also popular and are currently popular choices to capture dependencies in text \cite{Lin2017, Openai}. One specific attention mechanism is the transformer, an encoder-decoder architecture that involves an attention mechanism to capture dependencies in text \cite{Vaswani2017}. BERT (Bidirectional Encoder Representations from Transformers) \cite{Devlin2018} successfully combines this idea with a Masked Language Model objective to produce a complex language model that can be applied to many downstream tasks. It is worth noting that the concept of pre-training on outside data and applying a trained model to supervised tasks is still adhered to with these models. However, with these developments it seems that the concept of transfer learning in language models is definitely shifting from mere word embeddings to more sophisticated models that have been trained for a long period of time, which is very much like the trend in computer vision.\\
 \\
@@ -81,7 +88,7 @@ Before feeding word sequences into BERT, 15{\%} of the words in each sequence ar
 \label{fig:MLM}
 \end{figure}
 
-\clearpage
+
 \subsection{Next Sentence Prediction}
 During the pre-training phase, the model receives in input a pairs of sentences and learn how to predict if the second sentence is the actual next sentence of the original document. Half of the inputs is predicted as the actual next sentence while the other half is predicted as a random sentence from the corpus.\\
 \\

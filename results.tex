@@ -1,7 +1,18 @@
 \chapter{Results}
 \section{BERT difficulties}
+
+The mains difficulties that I have found while doing this project was to first tokenize correctly the data in order for BERT to perform. \\
+Indeed in BERT, the Next Sentence Prediction have a role of predicting correctly a sentence or a word in a specific manner. Except that in this case I am trying to predict an HS-Code in order to classify a product describe in the text as an HS-2 code. The automation of the classification of the Harmonized System is a very difficult task achieve.\\
+
+As of the time of writing this thesis, i did not manage to perform everything that I wanted. This will change in the future as i will describe in the Future Work section.
+
 \section{Experimental Set-up}
+All experiments were performed on a virtual machine with eight CPUs (Intel Xeon E5-2673 v3, clocked at 2.40GHz), 52 GB of ram and one NVIDIA Tesla K80 available. 
+
 
 \chapter{Discussions}
 \section{Constraints and limitations}
+On the topic of data quality, I implicitly accepted that there are possible fraudulent entries present in our data. For instance, on numerous occasions I encountered entire cars being labelled as spare parts - which carry a lower tariff. Training the NLP algorithm on this is problematic, as it will tend to learn these cases. I lack the means of verifying and correcting this and had to accept the bias.
+
 \section{Dictionary Limitation}
+First and foremost, I limit the amount of unique words in our data to only consider the top 20,000 words. This was done mostly due to computational constraints: I encountered memory limits before having an authorization to work on a Virtual Machine with a GPU. Nonetheless when I saw the computation when having a GPU or not, I choose to work directly on the entire data set.

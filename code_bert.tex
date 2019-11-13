@@ -1,0 +1,501 @@
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=t,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+
+\begin{lstlisting}[language=Python, caption=My attempt to adapt BERT to short text classification]
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import os
+import re
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+import tensorflow_hub as hub
+from tensorflow import keras
+from sklearn import preprocessing  # for labelencoding
+from sklearn.model_selection import train_test_split
+from datetime import datetime
+import bert
+from bert import run_classifier
+from bert import optimization
+from bert import tokenization
+
+# Initialize session
+sess = tf.Session()
+
+print("done importing packages")
+print("Version: ", tf.__version__)
+print("GPU is", "available" if tf.config.experimental.list_physical_devices("GPU") else "NOT AVAILABLE")
+
+DATA_DIR = "data/"
+training_data = format(DATA_DIR + "train.csv")
+validation_data = format(DATA_DIR + "val.csv")
+
+print(training_data)
+print(validation_data)
+
+DATA_LIMIT = 0  # set to 0 for no limits, useful for debugging though it is not representative of actual performance
+
+# DATA Cleaning
+print("Data Cleaning")
+
+# Applying cleaning of data due to the same suspicious as Jeffrey paper suggest
+print("# Applying cleaning of data due to the same suspicious as Jeffrey paper suggest")
+print("def cleanSentence")
+
+
+def cleanSentence(text):
+    return re.sub("[^a-zA-Z0-9-]", " ", text)
+
+
+print("start def suspicious_whitespace_remover")
+
+
+def suspicious_whitespace_remover(text):
+    return re.sub(r"\s{2,}", " ", text).strip()
+
+
+# DATA Preparation
+print("Data preparation")
+
+# prepare data: we just need this to look up the feature vector of every word we can encounter.
+# unsure whether to keep this in a function
+print("def preparedataset")
+
+
+def preparedataset(data_path, data_limit=DATA_LIMIT, shuffle=True, reverse=False):
+    print(data_path)
+    X, y = [], []
+    i = 0
+    with open(data_path, "r") as infile:
+        for line in infile:
+            a = line.split("|")
+            if len(a) != 3:
+                print(len(a))
+                print(a)
+            label, text, bs = line.split("|")
+            # texts are already cleaned, just split on |. BS includes the time stamp (not used at this time)
+            # a way to get around this seeing the csv headers as actual data entries. We don't want any of that
+            if i > 0:
+                label = "0" + label if len(label) < 8 else label  # hacky way to solve yet another string to int issue
+                if reverse:
+                    print(text)
+                    print(reverseSentence(text))
+                    X.append(reverseSentence(text))
+                    y.append(label[:2])
+
+                # cleanup - perhaps make this faster?
+                text = cleanSentence(text)
+                text = suspicious_whitespace_remover(text)
+
+                X.append(text)
+                y.append(label[:2])
+
+            i = i + 1  # temporary solution pending pipeline changes
+
+    X, y = np.array(X), np.array(y)
+
+    # shuffle the data
+    if shuffle:
+        idx = np.random.permutation(len(y))
+        X, y = X[idx], y[idx]
+
+    # apply limit
+    if data_limit > 0:
+        X, y = X[:data_limit], y[:data_limit]
+
+    return X, y
+
+
+print("start preparing data set")
+
+texts, y = preparedataset(training_data)
+print("total examples: %s" % len(y))
+print(type(texts[0]))
+print(texts[0])
+
+print("finished preparing data set")
+
+print("starting preprocess label")
+
+le = preprocessing.LabelEncoder()
+le.fit(y)
+labels = le.transform(y)
+len(le.classes_)
+
+print(type(y[0]))
+print(type(le.classes_))
+
+train_df = texts
+train_label = tf.keras.utils.to_categorical(np.asarray(labels))
+print('Shape of label tensor:', labels.shape)
+
+print("get the validation data")
+
+X_v, y_val = preparedataset(validation_data, data_limit=0, reverse=False)
+np.shape(y_val)
+
+print("end preprocess files")
+
+# Data Preprocessing
+print("Data Preprocessing")
+
+# train_df = texts
+# test_df = validation_data
+
+# print(type(texts[0]))
+# print(type(train_df[0]))
+
+
+class InputExample(object):
+    """A single training/test example for simple sequence classification."""
+
+    def __init__(self, guid, text_a, text_b=None, labels=None):
+        """Constructs a InputExample.
+
+        Args:
+            guid: Unique id for the example.
+            text_a: string. The untokenized text of the first sequence. For single
+            sequence tasks, only this sequence must be specified.
+            text_b: (Optional) string. The untokenized text of the second sequence.
+            Only must be specified for sequence pair tasks.
+            labels: (Optional) [string]. The label of the example. This should be
+            specified for train and dev examples, but not for test examples.
+        """
+        self.guid = guid
+        self.text_a = text_a
+        self.text_b = text_b
+        self.labels = labels
+
+
+print("input example done")
+
+
+class InputFeatures(object):
+    """A single set of features of data."""
+
+    def __init__(self, input_ids, input_mask, segment_ids, label_ids, is_real_example=True):
+        self.input_ids = input_ids
+        self.input_mask = input_mask
+        self.segment_ids = segment_ids
+        self.label_ids = label_ids,
+        self.is_real_example = is_real_example
+
+
+print("input features done")
+
+print("start defining tokenizer")
+
+
+def create_tokenizer_from_hub_module(bert_path):
+    """Get the vocab file and casing info from the Hub module."""
+    bert_module = hub.Module(bert_path)
+    tokenization_info = bert_module(signature="tokenization_info", as_dict=True)
+    vocab_file, do_lower_case = sess.run(
+        [tokenization_info["vocab_file"], tokenization_info["do_lower_case"]]
+    )
+
+    return FullTokenizer(vocab_file=vocab_file, do_lower_case=do_lower_case)
+
+
+print("defining tokenizer end")
+
+print("convert single example")
+
+
+def convert_single_example(tokenizer, example, max_seq_length=256):
+    """Converts a single `InputExample` into a single `InputFeatures`."""
+
+    if isinstance(example, PaddingInputExample):
+        input_ids = [0] * max_seq_length
+        input_mask = [0] * max_seq_length
+        segment_ids = [0] * max_seq_length
+        label = 0
+        return input_ids, input_mask, segment_ids, label
+
+    tokens_a = tokenizer.tokenize(example.text_a)
+    if len(tokens_a) > max_seq_length - 2:
+        tokens_a = tokens_a[0: (max_seq_length - 2)]
+
+    tokens = []
+    segment_ids = []
+    tokens.append("[CLS]")
+    segment_ids.append(0)
+    for token in tokens_a:
+        tokens.append(token)
+        segment_ids.append(0)
+    tokens.append("[SEP]")
+    segment_ids.append(0)
+
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
+
+    # The mask has 1 for real tokens and 0 for padding tokens. Only real
+    # tokens are attended to.
+    input_mask = [1] * len(input_ids)
+
+    # Zero-pad up to the sequence length.
+    while len(input_ids) < max_seq_length:
+        input_ids.append(0)
+        input_mask.append(0)
+        segment_ids.append(0)
+
+    assert len(input_ids) == max_seq_length
+    assert len(input_mask) == max_seq_length
+    assert len(segment_ids) == max_seq_length
+
+    return input_ids, input_mask, segment_ids, example.label
+
+
+print("convert examples to features")
+
+
+def convert_examples_to_features(tokenizer, examples, max_seq_length=256):
+    """Convert a set of `InputExample`s to a list of `InputFeatures`."""
+
+    input_ids, input_masks, segment_ids, labels = [], [], [], []
+    for example in tqdm(examples, desc="Converting examples to features"):
+        input_id, input_mask, segment_id, label = convert_single_example(
+            tokenizer, example, max_seq_length
+        )
+        input_ids.append(input_id)
+        input_masks.append(input_mask)
+        segment_ids.append(segment_id)
+        labels.append(label)
+    return (
+        np.array(input_ids),
+        np.array(input_masks),
+        np.array(segment_ids),
+        np.array(labels).reshape(-1, 1),
+    )
+
+
+print("convert_text_to_examples")
+
+
+def convert_text_to_examples(texts, labels):
+    """Create InputExamples"""
+    InputExamples = []
+    for text, label in zip(texts, labels):
+        InputExamples.append(
+            InputExample(guid=None, text_a=" ".join(text), text_b=None, label=labels)
+        )
+    return InputExamples
+
+
+print("Bert Layer")
+
+
+class BertLayer(tf.keras.layers.Layer):
+    def __init__(
+            self,
+            n_fine_tune_layers=10,
+            pooling="mean",
+            bert_path="https://tfhub.dev/google/bert_multi_cased_L-12_H-768_A-12/1",
+            **kwargs,
+    ):
+        self.n_fine_tune_layers = n_fine_tune_layers
+        self.trainable = True
+        self.output_size = 768
+        self.pooling = pooling
+        self.bert_path = bert_path
+        if self.pooling not in ["first", "mean"]:
+            raise NameError(
+                f"Undefined pooling type (must be either first or mean, but is {self.pooling}"
+            )
+
+        super(BertLayer, self).__init__(**kwargs)
+        print("layer > build")
+
+    def build(self, input_shape):
+        self.bert = hub.Module(
+            self.bert_path, trainable=self.trainable, name=f"{self.name}_module"
+        )
+
+        # Remove unused layers
+        trainable_vars = self.bert.variables
+        if self.pooling == "first":
+            trainable_vars = [var for var in trainable_vars if not "/cls/" in var.name]
+            trainable_layers = ["pooler/dense"]
+
+        elif self.pooling == "mean":
+            trainable_vars = [
+                var
+                for var in trainable_vars
+                if not "/cls/" in var.name and not "/pooler/" in var.name
+            ]
+            trainable_layers = []
+        else:
+            raise NameError(
+                f"Undefined pooling type (must be either first or mean, but is {self.pooling}"
+            )
+
+        # Select how many layers to fine tune
+        for i in range(self.n_fine_tune_layers):
+            trainable_layers.append(f"encoder/layer_{str(11 - i)}")
+
+        # Update trainable vars to contain only the specified layers
+        trainable_vars = [
+            var
+            for var in trainable_vars
+            if any([l in var.name for l in trainable_layers])
+        ]
+
+        # Add to trainable weights
+        for var in trainable_vars:
+            self._trainable_weights.append(var)
+
+        for var in self.bert.variables:
+            if var not in self._trainable_weights:
+                self._non_trainable_weights.append(var)
+
+        super(BertLayer, self).build(input_shape)
+        print("layer > call")
+
+    def call(self, inputs):
+        inputs = [K.cast(x, dtype="int32") for x in inputs]
+        input_ids, input_mask, segment_ids = inputs
+        bert_inputs = dict(
+            input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids
+        )
+        if self.pooling == "first":
+            pooled = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)[
+                "pooled_output"
+            ]
+        elif self.pooling == "mean":
+            result = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)[
+                "sequence_output"
+            ]
+
+            mul_mask = lambda x, m: x * tf.expand_dims(m, axis=-1)
+            masked_reduce_mean = lambda x, m: tf.reduce_sum(mul_mask(x, m), axis=1) / (
+                    tf.reduce_sum(m, axis=1, keepdims=True) + 1e-10)
+            input_mask = tf.cast(input_mask, tf.float32)
+            pooled = masked_reduce_mean(result, input_mask)
+        else:
+            raise NameError(f"Undefined pooling type (must be either first or mean, but is {self.pooling}")
+
+        return pooled
+
+    def compute_output_shape(self, input_shape):
+        print("layer > compute output shape")
+        return (input_shape[0], self.output_size)
+
+
+# Build model
+print("Build model")
+
+
+def build_model(max_seq_length):
+    in_id = tf.keras.layers.Input(shape=(max_seq_length,), name="input_ids")
+    in_mask = tf.keras.layers.Input(shape=(max_seq_length,), name="input_masks")
+    in_segment = tf.keras.layers.Input(shape=(max_seq_length,), name="segment_ids")
+    bert_inputs = [in_id, in_mask, in_segment]
+
+    bert_output = BertLayer(n_fine_tune_layers=3)(bert_inputs)
+    dense = tf.keras.layers.Dense(256, activation="relu")(bert_output)
+    pred = tf.keras.layers.Dense(len(le.classes_), activation="softmax")(dense)
+
+    model = tf.keras.models.Model(inputs=bert_inputs, outputs=pred)
+    model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+    model.summary()
+
+    return model
+
+
+print("init vars")
+
+
+def initialize_vars(sess):
+    sess.run(tf.local_variables_initializer())
+    sess.run(tf.global_variables_initializer())
+    sess.run(tf.tables_initializer())
+    K.set_session(sess)
+
+
+print("main")
+
+
+def main():
+    # Params for bert model and tokenization
+    bert_path = "https://tfhub.dev/google/bert_multi_cased_L-12_H-768_A-12/1"
+    max_seq_length = 256
+
+    # Create datasets (Only take up to max_seq_length words for memory)
+    train_text = texts.tolist()
+    # train_text = [" ".join(t.split()[0:max_seq_length]) for t in train_text]
+    train_text = np.array(train_text, dtype=object)[:, np.newaxis]
+    train_label = labels.tolist()
+
+    test_text = texts.tolist()
+    # test_text = [" ".join(t.split()[0:max_seq_length]) for t in test_text]
+    test_text = np.array(test_text, dtype=object)[:, np.newaxis]
+    test_label = labels.tolist()
+
+    # Instantiate tokenizer
+    tokenizer = create_tokenizer_from_hub_module(bert_path)
+
+    # Convert data to InputExample format
+    train_examples = convert_text_to_examples(train_text, train_label)
+    test_examples = convert_text_to_examples(test_text, test_label)
+
+    # Convert to features
+    (
+        train_input_ids,
+        train_input_masks,
+        train_segment_ids,
+        train_labels,
+    ) = convert_examples_to_features(
+        tokenizer, train_examples, max_seq_length=max_seq_length
+    )
+    (
+        test_input_ids,
+        test_input_masks,
+        test_segment_ids,
+        test_labels,
+    ) = convert_examples_to_features(
+        tokenizer, test_examples, max_seq_length=max_seq_length
+    )
+
+    model = build_model(max_seq_length)
+
+    # Instantiate variables
+    initialize_vars(sess)
+
+    model.fit(
+        [train_input_ids, train_input_masks, train_segment_ids],
+        train_labels,
+        validation_data=(
+            [test_input_ids, test_input_masks, test_segment_ids],
+            test_labels,
+        ),
+        epochs=5,
+        batch_size=32,
+    )
+
+
+if __name__ == "__main__":
+    main()
+
+\end{lstlisting}
