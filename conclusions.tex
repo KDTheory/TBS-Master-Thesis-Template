@@ -1,12 +1,14 @@
 \chapter{Conclusions and Future Work}\label{ch:concl}
 \section{Conclusion}
-In this thesis we set out to tackle the problem of HS-code prediction at the HS-2 (chapter) and HS-4 (heading) level on two real-world data sets that were defined by their large size and short text descriptions. As of today, i did not manage to have a results due to a technical problem with Google BERT and more specifically with the Next Sentence Prediction. I hope that, I will manage to find a work around in a close future. thanks to a better understanding to my problem and the release of the new successor of Google BERT which is ALBERT \cite{Lan}.
+In this thesis, we set out to tackle the problem of HS-code prediction at the HS-2 (chapter) and HS-4 (heading) level on two real-world data sets that were defined by their large size and short text descriptions. 
+BERT is undoubtedly a breakthrough in the use of Machine Learning for Natural Language Processing. The fact that it is allowing fast fine-tuning will likely allow a wide range of possible applications in the future. In this attempt of using BERT for classifying short text with Harmonize System, some more work as to be done to have good results.
+As of today, i did not manage to have a result due to a technical problem with Google BERT and more specifically with the Next Sentence Prediction. I hope that I will manage to find a workaround in the close future. thanks to a better understanding of my problem and the release of the new successor of Google BERT which is ALBERT \cite{Lan}.
 
 \section{Future Work}
-For future work on this problem, i would like to go deeper in the knowledge of NLP and how exactly BERT is classifying text. Indeed in BERT documentation \footnote{\url{https://github.com/google-research/bert}} it is not shown how exactly BERT can be use to classify a single sentence. I had to look on the construction code \footnote{\url{https://github.com/google-research/bert/blob/master/run_classifier_with_tfhub.py}} to know how I can used BERT to classify text. 
-At the time of writing this thesis, I have thinking of two work around. \\
+For future work on this problem, i would like to go deeper into the knowledge of NLP and how exactly BERT is classifying text. Indeed in BERT documentation \footnote{\url{https://github.com/google-research/bert}} it is not shown how exactly BERT can be used to classify a single sentence. I had to look at the construction code \footnote{\url{https://github.com/google-research/bert/blob/master/run_classifier_with_tfhub.py}} to know how I can use BERT to classify text. 
+At the time of writing this thesis, I have thought of two workarounds. \\
 
-The first one is to tackle the Next Sentence Prediction by changing the Harmonized Code in text more specifically in categories name and subcategories corresponding to the HS-2 and HS-4 code in order to allow the NSP work in more correct way.
+The first one is to tackle the Next Sentence Prediction by changing the Harmonized Code in short text more specifically in categories name and subcategories corresponding to the HS-2 and HS-4 code in order to allow the NSP work in a more correct way.
 
-The second one is to use ALBERT \cite{Lan} when it will be available in open sources because this new NLP model is not using the Next Sentence Prediction. Indeed thanks to the researchers of RoBERTa \cite{Liu2019b} , they showed that the Next Sentence Prediction loss used in the original BERT was not very effective as as training mechanism and simply skipped using it. 
-However I will not describe how ALBERT\cite{Lan} work as it no the focus of this thesis.
+The second one is to use ALBERT \cite{Lan} when it will be available in open sources because this new NLP model is not using the Next Sentence Prediction. Indeed thanks to the researchers of RoBERTa \cite{Liu2019b}, they showed that the Next Sentence Prediction loss used in the original BERT was not very effective as of a training mechanism and simply skipped using it. 
+However, I will not describe how ALBERT\cite{Lan} works as it no the focus of this thesis.
